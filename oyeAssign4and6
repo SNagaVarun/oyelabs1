@@ -1,0 +1,25 @@
+//question4
+
+const person = {
+  id: 2,
+  gender: "mail",
+};
+const student = {
+  name: "ravi",
+  email: "ravi11@yopmail.com",
+};
+
+const resultantObject = {
+  ...person,
+  ...student,
+};
+console.log(resultantObject);
+
+//question6
+
+let userProvidedArr = hundredNumArr.slice(0, hundredNumArr.length - 1); //Assumming this as an user given array
+for (let i = 1; i <= 100; i++) {
+  if (userProvidedArr.includes(i) === false) {
+    console.log(i);
+  }
+}

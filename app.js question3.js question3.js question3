@@ -1,0 +1,89 @@
+const express = require("express");
+const path = require("path");
+
+const { open } = require("sqlite");
+const sqlite3 = require("sqlite3");
+const app = express();
+
+const dbPath = path.join(__dirname, "trail.db");
+
+let db = null;
+let lenth = 4;
+
+const customers = [
+  {
+    email: "anurag11@yopmail.com",
+    name: "anurag",
+  },
+  {
+    email: "sameer11@yopmail.com",
+    name: "sameer",
+  },
+  {
+    email: "ravi11@yopmail.com",
+    name: "ravi",
+  },
+  {
+    email: "akash11@yopmail.com",
+    name: "akash",
+  },
+  {
+    email: "anjali11@yopmail.com",
+    name: "anjai",
+  },
+  {
+    email: "santosh11@yopmail.com",
+    name: "santosh",
+  },
+];
+
+const initializeDBAndServer = async () => {
+  try {
+    db = await open({
+      filename: dbPath,
+      driver: sqlite3.Database,
+    });
+    for (let i of customers) {
+      let query = `select customerId,email from customers where email like '${i.email}' `;
+      let response = await db.all(query);
+      console.log(response);
+      if (response.length === 0) {
+        const query1 = `insert into customers (customerId,name,email) values( ${lenth}, '${i.name}','${i.email}')`;
+        await db.run(query1);
+      } else {
+        let initial = response[0].customerId;
+        const query2 = `update customers set name='${i.name}' where customerId='${initial}'`;
+        await db.run(query2);
+      }
+      lenth = lenth + 1;
+    }
+    app.listen(3000, () => {
+      console.log("Server Running at http://localhost:3000/");
+    });
+  } catch (e) {
+    console.log(`DB Error: ${e.message}`);
+    process.exit(1);
+  }
+};
+
+initializeDBAndServer();
+
+/*
+app.post("/", async (request, response) => {
+  for (let i of customers) {
+    let query = `select customerId,email from customers where email like '${i.email}' `;
+    let response = await db.all(query);
+    console.log(response);
+    if (response.length === 0) {
+      const query1 = `insert into customers (customerId,name,email) values( ${lenth}, '${i.name}','${i.email}')`;
+      await db.run(query1);
+    } else {
+      let initial = response[0].customerId;
+      const query2 = `update customers set name='${i.name}' where customerId='${initial}'`;
+      await db.run(query2);
+    }
+    lenth = lenth + 1;
+  }
+});
+//checkingFunction();
+*/

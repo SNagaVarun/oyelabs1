@@ -1,0 +1,40 @@
+const express = require("express");
+const path = require("path");
+
+const { open } = require("sqlite");
+const sqlite3 = require("sqlite3");
+const app = express();
+app.use(express.json());
+
+const dbPath = path.join(__dirname, "customer.db");
+
+let db = null;
+
+const initializeDBAndServer = async () => {
+  try {
+    db = await open({
+      filename: dbPath,
+      driver: sqlite3.Database,
+    });
+    app.listen(3000, () => {
+      console.log("Server Running at http://localhost:3000/");
+    });
+  } catch (e) {
+    console.log(`DB Error: ${e.message}`);
+    process.exit(1);
+  }
+};
+
+initializeDBAndServer();
+
+app.post("/addUser", async (request, response) => {
+  const { username, email } = request.body;
+  const query = `select * from customer`;
+  const dbResponse = await db.all(query);
+  const id = dbResponse.length;
+  const insertQuery = `insert into customer( customerId,name,email) values(${
+    id + 1
+  },'${username}','${email}');`;
+  const dbInsert = await db.run(insertQuery);
+  response.send("User Added Successfully");
+});

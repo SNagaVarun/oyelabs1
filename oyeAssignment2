@@ -1,0 +1,41 @@
+const express = require("express");
+const path = require("path");
+
+const { open } = require("sqlite");
+const sqlite3 = require("sqlite3");
+const app = express();
+
+const dbPath = path.join(__dirname, "subjectPerson.db");
+let db = null;
+
+const initializeDBAndServer = async () => {
+  try {
+    db = await open({
+      filename: dbPath,
+      driver: sqlite3.Database,
+    });
+    let initialQuery = `select customerId from customers`;
+    let dbResponse = await db.all(initialQuery);
+
+    for (let i of dbResponse) {
+      let arr = [];
+      let query = `select * from (subjectMapping inner join customers on subjectMapping.customerId=customers.customerId) as T inner join subjects on T.subjectId=subjects.subjectId where T.customerId=${i.customerId} order by subjects.subjectName;`;
+      const finalResponse = await db.all(query);
+      let j;
+      for (j of finalResponse) {
+        arr.push(j.subjectName.toLowerCase());
+      }
+
+      console.log(j.customerId + "  " + j.name + "  " + arr.join(","));
+    }
+
+    app.listen(3000, () => {
+      console.log("Server Running at http://localhost:3000/");
+    });
+  } catch (e) {
+    console.log(`DB Error: ${e.message}`);
+    process.exit(1);
+  }
+};
+
+initializeDBAndServer();
